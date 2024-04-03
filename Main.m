@@ -82,8 +82,8 @@ dataCell = cell(numel(temperatureData), 0);
 % Organize data into cell array with headers
 for i = 1:numel(temperatureData)
     data = temperatureData{i};
-    tempCell = cell(11, numel(pipeNames));
-    for j = 1:numel(pipeNames)
+    tempCell = cell(11, numel(Names));
+    for j = 1:numel(Names)
         startIdx = (j - 1) * 11 + 1;
         endIdx = j * 11;
         tempCell(:, j) = num2cell(data(startIdx:endIdx));
@@ -93,9 +93,9 @@ end
 
 % Create a table to store the data
 dataTable = table(timestamps, 'VariableNames', {'Timestamp'});
-for i = 1:numel(pipeNames)
+for i = 1:numel(Names)
     for j = 1:11
-        varName = strcat(pipeNames{i}, num2str(j));
+        varName = strcat(Names{i}, num2str(j));
         dataColumn = nan(numel(temperatureData), 1);
         for k = 1:numel(temperatureData)
             dataColumn(k) = dataCell{k}{j, i};
