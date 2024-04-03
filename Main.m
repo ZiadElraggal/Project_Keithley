@@ -74,6 +74,40 @@ end
 % Clean up
 delete(obj);
 
+% Write data to Excel file
+
+% Initialize cell array to store data
+dataCell = cell(numel(temperatureData), 0);
+
+% Organize data into cell array with headers
+for i = 1:numel(temperatureData)
+    data = temperatureData{i};
+    tempCell = cell(11, numel(pipeNames));
+    for j = 1:numel(pipeNames)
+        startIdx = (j - 1) * 11 + 1;
+        endIdx = j * 11;
+        tempCell(:, j) = num2cell(data(startIdx:endIdx));
+    end
+    dataCell{i} = tempCell;
+end
+
+% Create a table to store the data
+dataTable = table(timestamps, 'VariableNames', {'Timestamp'});
+for i = 1:numel(pipeNames)
+    for j = 1:11
+        varName = strcat(pipeNames{i}, num2str(j));
+        dataColumn = nan(numel(temperatureData), 1);
+        for k = 1:numel(temperatureData)
+            dataColumn(k) = dataCell{k}{j, i};
+        end
+        dataTable.(varName) = dataColumn;
+    end
+end
+
+% Write data to Excel file
+filename = strcat("TempData", "_", datestr(now,'dd-mm-yyyy_HH.MM.SS'), '.xlsx');
+writetable(dataTable, filename);
+
 
 % Determine minimum length for plotting
 minLength = min([length(pointNames), numel(temperatureData), length(timestamps)]);
