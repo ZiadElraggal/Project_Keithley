@@ -4,7 +4,7 @@ obj.Timeout=20;
 numTemps = 132;
 Intervalmin = 1;
 Durationhrs = 1;
-Names = {'ex1', 'ex2', 'ex3', 'ex4', 'ex5', 'ex6', 'ex7', 'ex8', 'ex9', 'ex10', 'ex11', 'ex12'};
+Names = {'ex1-', 'ex2-', 'ex3-', 'ex4-', 'ex5-', 'ex6-', 'ex7-', 'ex8-', 'ex9-', 'ex10-', 'ex11-', 'ex12-'};
 num = numel(Names);
 
 % Generate point names
