@@ -3,7 +3,9 @@ classdef Application_Measure < matlab.apps.AppBase
     % Properties that correspond to app components
     properties (Access = public)
         UIFigure                       matlab.ui.Figure
-        ZEApplication_MeasureV10Label  matlab.ui.control.Label
+        TimeLeftEditField              matlab.ui.control.EditField
+        TimeLeftEditFieldLabel         matlab.ui.control.Label
+        ZEApplication_MeasureV11Label  matlab.ui.control.Label
         ReadyLabel                     matlab.ui.control.Label
         STOPButton                     matlab.ui.control.Button
         StartButton                    matlab.ui.control.Button
@@ -18,6 +20,7 @@ classdef Application_Measure < matlab.apps.AppBase
     
     properties (Access = private)
         StopFlag=false; % Description
+        Timer;
     end
     
     methods (Access = private)
@@ -141,6 +144,7 @@ classdef Application_Measure < matlab.apps.AppBase
              end
         end
     end
+        
 end
 
     % Callbacks that handle component events
@@ -169,7 +173,7 @@ end
 
         % Button pushed function: StartButton
         function StartButtonPushed(app, event)
-            switch app.SelectedExpirimentDropDown.Value
+             switch app.SelectedExpirimentDropDown.Value
                 case "Current_DC_6510"
                    % Connect to the Device and Setup Variables
                     clear obj;
@@ -184,6 +188,7 @@ end
                         end
                     end
                     obj = visadev(objName);
+                    delete("CurrentData_TEMPORARY.xlsx")
                     Currents = 4;
                     Intervalmin = app.SelectedIntervalMinEditField.Value;
                     Durationhrs = app.SelectedDurationHrsEditField.Value;
@@ -191,7 +196,6 @@ end
                     app.ReadyLabel.Text="Running..";
                     app.ReadyLabel.BackgroundColor="yellow";
                     ChannelNames = {'141','142','241','242'};
-                    
 
                     % Instrument Setup
                     writeline(obj, "reset()")
@@ -201,13 +205,23 @@ end
                     timestamps = {}; 
                     startTime = tic;
                     while toc(startTime) < (Durationhrs * 3600) && ~app.StopFlag
+                        timeLeft = (Durationhrs * 3600) - toc(startTime);
+                        hoursLeft = floor(timeLeft / 3600);
+                        minutesLeft = floor(mod(timeLeft, 3600) / 60);
+                        secondsLeft = mod(timeLeft, 60);
+                        hoursStr = num2str(hoursLeft);
+                        minutesStr = num2str(minutesLeft);
+                        secondsStr = num2str(secondsLeft);
+                        timeLeftStr = [hoursStr, ':', minutesStr, ':', secondsStr];
+                        app.TimeLeftEditField.Value = timeLeftStr;
                         x = datetime('now', 'Format', 'HH:mm:ss');
                         CurrentMeasurements = measureCurrentDC(app,obj);
                         
                         timestamps{end+1, 1} = x; 
                     
                         CurrentData = [CurrentData; CurrentMeasurements];
-                    
+                        
+
                         headers = [{'Timestamp'}, ChannelNames];
                         % Write Headers
                         writecell(headers, "CurrentData_TEMPORARY.xlsx", 'Range', 'A1');
@@ -215,11 +229,10 @@ end
                         % Write Timestamps
                         writecell(timestamps, "CurrentData_TEMPORARY.xlsx", 'Range', 'A2');
                     
-                    
                         % Write Current Data with timestamp in the filename
                         writematrix(CurrentData, "CurrentData_TEMPORARY.xlsx", 'Range', 'B2');
+                        open("CurrentData_TEMPORARY.xlsx")
                         pause(Intervalmin * 60)
-                    
                     end
                     
                     
@@ -242,8 +255,8 @@ end
                     delete("CurrentData_TEMPORARY.xlsx")
                     app.ReadyLabel.Text="Ready";
                     app.ReadyLabel.BackgroundColor=[0.03,0.57,0.03];
-
-
+                    app.TimeLeftEditField.Value= "0";
+    
 
 
 
@@ -261,6 +274,8 @@ end
                         end
                     end
                     obj = visadev(objName);
+                    delete("TempData_6510_TEMPORARY.fig")
+                    delete("TempData_6510_TEMPORARY.xlsx")
                     obj.Timeout=20;
                     numTemps = 132;
                     Intervalmin = app.SelectedIntervalMinEditField.Value;
@@ -289,6 +304,15 @@ end
                     % Data collection loop
                     startTime = tic;
                     while toc(startTime) < (Durationhrs * 3600) && ~app.StopFlag
+                        timeLeft = (Durationhrs * 3600) - toc(startTime);
+                        hoursLeft = floor(timeLeft / 3600);
+                        minutesLeft = floor(mod(timeLeft, 3600) / 60);
+                        secondsLeft = mod(timeLeft, 60);
+                        hoursStr = num2str(hoursLeft);
+                        minutesStr = num2str(minutesLeft);
+                        secondsStr = num2str(secondsLeft);
+                        timeLeftStr = [hoursStr, ':', minutesStr, ':', secondsStr];
+                        app.TimeLeftEditField.Value = timeLeftStr;
                         i = length(temperatureData) + 1;
                         x = datetime('now', 'Format', 'HH:mm:ss');
                         temperatureMeasurements = measureTemperature6510(app,obj);
@@ -364,6 +388,7 @@ end
                     
                     % Clean up
                     delete(obj);
+                    app.TimeLeftEditField.Value= "0";
                     
                     % Write data to Excel file
                     
@@ -458,6 +483,8 @@ end
                     end
                 end
                 obj = visadev(objName);
+                delete("TempData_3706_TEMPORARY.fig")
+                delete("TempData_3706_TEMPORARY.fig")
                 obj.Timeout=20;
                 numTemps = 132;
                 Intervalmin = app.SelectedIntervalMinEditField.Value;
@@ -486,6 +513,15 @@ end
                 % Data collection loop
                 startTime = tic;
                 while toc(startTime) < (Durationhrs * 3600) && ~app.StopFlag
+                   timeLeft = (Durationhrs * 3600) - toc(startTime);
+                   hoursLeft = floor(timeLeft / 3600);
+                   minutesLeft = floor(mod(timeLeft, 3600) / 60);
+                   secondsLeft = mod(timeLeft, 60);
+                   hoursStr = num2str(hoursLeft);
+                   minutesStr = num2str(minutesLeft);
+                   secondsStr = num2str(secondsLeft);
+                   timeLeftStr = [hoursStr, ':', minutesStr, ':', secondsStr];
+                   app.TimeLeftEditField.Value = timeLeftStr;
                     i = length(temperatureData) + 1;
                     x = datetime('now', 'Format', 'HH:mm:ss');
                     temperatureMeasurements = measureTemperature3706(app,obj);
@@ -562,6 +598,7 @@ end
                 
                 % Clean up
                 delete(obj);
+                app.TimeLeftEditField.Value= "0";
                 
                 % Write data to Excel file
                 
@@ -658,6 +695,7 @@ end
                         end
                     end
                     obj = visadev(objName);
+                    delete("CurrentData_TEMPORARY.xlsx")
                     Currents = 4;
                     Intervalmin = app.SelectedIntervalMinEditField.Value;
                     Durationhrs = app.SelectedDurationHrsEditField.Value;
@@ -675,13 +713,21 @@ end
                     timestamps = {}; 
                     startTime = tic;
                     while toc(startTime) < (Durationhrs * 3600) && ~app.StopFlag
+                        timeLeft = (Durationhrs * 3600) - toc(startTime);
+                        hoursLeft = floor(timeLeft / 3600);
+                        minutesLeft = floor(mod(timeLeft, 3600) / 60);
+                        secondsLeft = mod(timeLeft, 60);
+                        hoursStr = num2str(hoursLeft);
+                        minutesStr = num2str(minutesLeft);
+                        secondsStr = num2str(secondsLeft);
+                        timeLeftStr = [hoursStr, ':', minutesStr, ':', secondsStr];
+                        app.TimeLeftEditField.Value = timeLeftStr;
                         x = datetime('now', 'Format', 'HH:mm:ss');
                         CurrentMeasurements = measureCurrentAC(app,obj);
                         
                         timestamps{end+1, 1} = x; 
                     
-                        CurrentData = [CurrentData; Curre60
-                            easurements];
+                        CurrentData = [CurrentData; CurrentMeasurements];
                     
                         headers = [{'Timestamp'}, ChannelNames];
                         % Write Headers
@@ -693,8 +739,9 @@ end
                     
                         % Write Current Data with timestamp in the filename
                         writematrix(CurrentData, "CurrentData_TEMPORARY.xlsx", 'Range', 'B2');
+                        open("CurrentData_TEMPORARY.xlsx")
                         pause(Intervalmin * 60)
-                    
+                        
                     end
                     
                     
@@ -717,7 +764,8 @@ end
                     delete("CurrentData_TEMPORARY.xlsx")
                     app.ReadyLabel.Text="Ready";
                     app.ReadyLabel.BackgroundColor=[0.03,0.57,0.03];
-
+                    app.TimeLeftEditField.Value= "0";
+                
             end
         end
 
@@ -726,6 +774,12 @@ end
          app.StopFlag=true;
          app.ReadyLabel.Text="Stopping....";
          app.ReadyLabel.BackgroundColor="red";
+        end
+
+        % Value changed function: TimeLeftEditField
+        function TimeLeftEditFieldValueChanged(app, event)
+            value = app.TimeLeftEditField.Value;
+            
         end
     end
 
@@ -809,11 +863,22 @@ end
             app.ReadyLabel.Position = [278 18 191 45];
             app.ReadyLabel.Text = 'Ready';
 
-            % Create ZEApplication_MeasureV10Label
-            app.ZEApplication_MeasureV10Label = uilabel(app.UIFigure);
-            app.ZEApplication_MeasureV10Label.FontSize = 9;
-            app.ZEApplication_MeasureV10Label.Position = [14 1 145 27];
-            app.ZEApplication_MeasureV10Label.Text = 'ZE-Application_Measure V.1.0';
+            % Create ZEApplication_MeasureV11Label
+            app.ZEApplication_MeasureV11Label = uilabel(app.UIFigure);
+            app.ZEApplication_MeasureV11Label.FontSize = 9;
+            app.ZEApplication_MeasureV11Label.Position = [14 1 145 27];
+            app.ZEApplication_MeasureV11Label.Text = 'ZE-Application_Measure V.1.1';
+
+            % Create TimeLeftEditFieldLabel
+            app.TimeLeftEditFieldLabel = uilabel(app.UIFigure);
+            app.TimeLeftEditFieldLabel.HorizontalAlignment = 'right';
+            app.TimeLeftEditFieldLabel.Position = [57 107 55 22];
+            app.TimeLeftEditFieldLabel.Text = 'Time Left';
+
+            % Create TimeLeftEditField
+            app.TimeLeftEditField = uieditfield(app.UIFigure, 'text');
+            app.TimeLeftEditField.ValueChangedFcn = createCallbackFcn(app, @TimeLeftEditFieldValueChanged, true);
+            app.TimeLeftEditField.Position = [127 107 100 22];
 
             % Show the figure after all components are created
             app.UIFigure.Visible = 'on';
